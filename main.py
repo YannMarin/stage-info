@@ -105,7 +105,7 @@ def print_alphabet(x): #affiche l'alphabet pour ceux qui ne le connaissent pas.
 '''
 
 
-def trouver_sous_modèles_fixesv2(B,r,tab): #B un ensemble d'indice, nB l'ensemble des points couvert par B,r indice de récursion, tab tableau du résultat
+def trouver_sous_modèles_fixesv1(B, r, tab): #B un ensemble d'indice, nB l'ensemble des points couvert par B,r indice de récursion, tab tableau du résultat
     tailleB = len(B)
     nB = from_bases_indices_to_point(B)
     taillenB = len(nB)
@@ -119,7 +119,7 @@ def trouver_sous_modèles_fixesv2(B,r,tab): #B un ensemble d'indice, nB l'ensemb
         for i in range(r,tailleB):
             Bi = copy.copy(B)
             del Bi[i]
-            trouver_sous_modèles_fixesv2(Bi, i, tab)
+            trouver_sous_modèles_fixesv1(Bi, i, tab)
             '''On test tous les sous-ensemble de B (sauf ceux correspondants à des sous-modèles non maximaux) mais est-ce bien nécessaire ?
                 -Si on ne prend que les sous ensemble de degré inférieur ?
                  A tester, je crois que ça revient au même en fait, on ferait moins de récursion mais autant de test
@@ -127,8 +127,8 @@ def trouver_sous_modèles_fixesv2(B,r,tab): #B un ensemble d'indice, nB l'ensemb
                  '''
 
 
-            #v3 cherche à diminuer le nombre de récursion et de test mais demande de garder plus de chose en mémoire sur la pile. (je crois ?)
-def trouver_sous_modèles_fixesv3(B,r,tab,nB,taillenB,tailleB): #TODO ne marchera pas ? (ou pas mieux que v2).
+            #v2 cherche à diminuer le nombre de récursion et de test mais demande de garder plus de chose en mémoire sur la pile. (je crois ?)
+def trouver_sous_modèles_fixesv2(B, r, tab, nB, taillenB, tailleB): #TODO ne marchera pas ? (ou pas mieux que v2).
     combination = combination_tab[taillenB-d]
     if tailleB == combination:
         tab.append(nB)
@@ -140,10 +140,10 @@ def trouver_sous_modèles_fixesv3(B,r,tab,nB,taillenB,tailleB): #TODO ne marcher
             taillenBi = len(nBi)
             while taillenBi < taillenB:
 
-                trouver_sous_modèles_fixesv3(Bi, i, tab, nBi, taillenBi, tailleB-1)
+                trouver_sous_modèles_fixesv2(Bi, i, tab, nBi, taillenBi, tailleB - 1)
 
 '''         Dans cette version, le but est de faire la récurence sur tous les ensembles de bases qui couvrent un sous ensemble de nB et maximaux.'''
-def trouver_sous_modèles_fixesv4(B,r,tab,nB,taillenB,tailleB): #TODO à corriger, return aussi les sous-modèles non maximaux (ça veut dire que l'on envoit plusieurs fois les mêmes sous ensemble je pense
+def trouver_sous_modèles_fixesv3(B, r, tab, nB, taillenB, tailleB): #TODO à corriger, return aussi les sous-modèles non maximaux (ça veut dire que l'on envoit plusieurs fois les mêmes sous ensemble je pense
     combination = combination_tab[taillenB-d]
     if tailleB == combination:
         tab.append(nB)
@@ -152,12 +152,9 @@ def trouver_sous_modèles_fixesv4(B,r,tab,nB,taillenB,tailleB): #TODO à corrige
         for i in range(r,taillenB):
             nBi = [x for x in nB]
             del nBi[i]
-            print("nBi",nBi)
             tab_base_de_nBi = from_points_to_base(nBi,d)
-            print("tab_base_",tab_base_de_nBi)
             Bi = [x for x in B if from_base_indice_to_base(x) in tab_base_de_nBi]
-            print("Bi",Bi)
-            trouver_sous_modèles_fixesv4(Bi,i,tab,nBi,taillenB-1,len(Bi)) #TODO il faut vérifier que l'on ne fais pas deux fois les mêmes ensemble
+            trouver_sous_modèles_fixesv3(Bi, i, tab, nBi, taillenB - 1, len(Bi)) #TODO il faut vérifier que l'on ne fais pas deux fois les mêmes ensemble
 
 
 
@@ -234,13 +231,17 @@ bases_fixes = input("bases_fixes: ")
 tab_bases_fixes = from_string_to_tab(bases_fixes)
 print(tab_bases_fixes)
 
+version = input("Version 1 ou 3 ?")
 print("Les sous-modèles fixes sont: ")
 start = time.time()
 tab_sous_modeles_fixe=[]
-trouver_sous_modèles_fixesv2(tab_bases_fixes,0,tab_sous_modeles_fixe)
-'''trouver_sous_modèles_fixesv4(tab_bases_fixes,0,tab_sous_modeles_fixe,from_bases_indices_to_point(tab_bases_fixes),
-                             len(from_bases_indices_to_point(tab_bases_fixes)),len(tab_bases_fixes))
-'''
+
+if version=='1':
+    trouver_sous_modèles_fixesv1(tab_bases_fixes, 0, tab_sous_modeles_fixe)
+else:
+    trouver_sous_modèles_fixesv3(tab_bases_fixes, 0, tab_sous_modeles_fixe, from_bases_indices_to_point(tab_bases_fixes),
+                                 len(from_bases_indices_to_point(tab_bases_fixes)), len(tab_bases_fixes))
+
 end = time.time()
 elapsed = end-start
 print(f'Le calcul à prit {elapsed:.2}ms')
