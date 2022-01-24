@@ -1,5 +1,8 @@
 import numpy as np
 from sympy import binomial
+import time
+import copy
+
 '''
 Le programme va demander une taille n qui correspond à la taille d'un modèle (ex n=8)
 puis il demandera la dimension (ex d=4)
@@ -56,7 +59,7 @@ def from_bases_to_points(B): #B ensemble de base (points), return les points cou
             if y not in tab_points:
                 tab_points.append(y)
 
-    return sorted(tab_points)
+    return tab_points #TODO est-ce que l'on a vraiment besoin de trier les points ? (non ?)
 
 '''Créer le tableau des points à partir du tableau des indices des bases'''
 def from_bases_indices_to_point(B): #B ensemble de base (indices) return l'ensemble de points couvert par ces bases
@@ -101,6 +104,7 @@ def print_alphabet(x): #affiche l'alphabet pour ceux qui ne le connaissent pas.
                 r sert à réduire le nombre de récursion en ne supprimant que les bases à la rème position ou plus dans l'étape 3.
 '''
 
+
 def trouver_sous_modèles_fixesv2(B,r,tab): #B un ensemble d'indice, nB l'ensemble des points couvert par B,r indice de récursion, tab tableau du résultat
     tailleB = len(B)
     nB = from_bases_indices_to_point(B)
@@ -113,7 +117,7 @@ def trouver_sous_modèles_fixesv2(B,r,tab): #B un ensemble d'indice, nB l'ensemb
     else: #cas tailleB < combination #TODO si on peut améliorer l'algorithme c'est ici
         #print("Cas 3!")
         for i in range(r,tailleB):
-            Bi = [x for x in B]
+            Bi = copy.copy(B)
             del Bi[i]
             trouver_sous_modèles_fixesv2(Bi, i, tab)
             '''On test tous les sous-ensemble de B (sauf ceux correspondants à des sous-modèles non maximaux) mais est-ce bien nécessaire ?
@@ -124,7 +128,7 @@ def trouver_sous_modèles_fixesv2(B,r,tab): #B un ensemble d'indice, nB l'ensemb
 
 
             #v3 cherche à diminuer le nombre de récursion et de test mais demande de garder plus de chose en mémoire sur la pile. (je crois ?)
-def trouver_sous_modèles_fixesv3(B,r,tab,nB,taillenB,tailleB): #TODO A CORRIGER, ne marche pas.
+def trouver_sous_modèles_fixesv3(B,r,tab,nB,taillenB,tailleB): #TODO ne marchera pas ? (ou pas mieux que v2).
     combination = combination_tab[taillenB-d]
     if tailleB == combination:
         tab.append(nB)
@@ -134,8 +138,30 @@ def trouver_sous_modèles_fixesv3(B,r,tab,nB,taillenB,tailleB): #TODO A CORRIGER
             del Bi[i]
             nBi = from_bases_indices_to_point(Bi)
             taillenBi = len(nBi)
-            if taillenBi < taillenB:
+            while taillenBi < taillenB:
+
                 trouver_sous_modèles_fixesv3(Bi, i, tab, nBi, taillenBi, tailleB-1)
+
+'''         Dans cette version, le but est de faire la récurence sur tous les ensembles de bases qui couvrent un sous ensemble de nB et maximaux.'''
+def trouver_sous_modèles_fixesv4(B,r,tab,nB,taillenB,tailleB): #TODO à corriger, return aussi les sous-modèles non maximaux (ça veut dire que l'on envoit plusieurs fois les mêmes sous ensemble je pense
+    combination = combination_tab[taillenB-d]
+    if tailleB == combination:
+        tab.append(nB)
+    else:
+
+        for i in range(r,taillenB):
+            nBi = [x for x in nB]
+            del nBi[i]
+            print("nBi",nBi)
+            tab_base_de_nBi = from_points_to_base(nBi,d)
+            print("tab_base_",tab_base_de_nBi)
+            Bi = [x for x in B if from_base_indice_to_base(x) in tab_base_de_nBi]
+            print("Bi",Bi)
+            trouver_sous_modèles_fixesv4(Bi,i,tab,nBi,taillenB-1,len(Bi)) #TODO il faut vérifier que l'on ne fais pas deux fois les mêmes ensemble
+
+
+
+
 
 def supprimer_les_bases_d_une_liste_de_point(P,d): #P liste de point, d dimension, retourne la même liste sans les éléments de taille d.
     return [x for x in P if len(x) > d]
@@ -149,12 +175,16 @@ def donner_des_points_a_couvrir():
     tab_point = from_string_to_tab(liste_point)
     list_base_des_points = from_points_to_base(tab_point, d)
 
-    print("Liste des bases de ces points:")
+    '''print("Liste des bases de ces points:")
     print(list_base_des_points)
-
-    print("Liste des indices des bases de ces points:")
+'''
+    print("Liste des indices des bases à prendre:")
     tab_ind = from_bases_to_bases_indices(list_base_des_points)
-    print(tab_ind)
+
+    for x in tab_ind:
+        if x not in tab_base_des_sommets_a_couvrir:
+            tab_base_des_sommets_a_couvrir.append(x)
+    print(sorted(tab_base_des_sommets_a_couvrir))
 
 def from_string_to_tab(string): #transforme un string de la forme 1,23,4 en un tableau [1,23,4]
     tab = []
@@ -170,13 +200,15 @@ def from_string_to_tab(string): #transforme un string de la forme 1,23,4 en un t
     return tab
 
 
+
 print("Taille des modèles ?")
 n=int(input("n: "))
 print("Dimension ?:")
 d=int(input("d: "))
-
 list_base = combinations(range(n),d)
 tab_base = [[y for y in x] for x in list_base]
+
+
 print("ensembles des bases:")
 for i in range(len(tab_base)):
     print(i,"=",tab_base[i],end=",")
@@ -188,8 +220,11 @@ print("Tableau des combinaisons", combination_tab)
 '''     Si on veut être sur d'avoir au moins un sous modèle fixe qui ne soit pas une base'''
 bool_couvrir_des_points = input("Voulez vous la liste des bases pour être sûr de couvrir certains points ?: (o/n)")
 
-if bool_couvrir_des_points == 'o':
+tab_base_des_sommets_a_couvrir = []
+while bool_couvrir_des_points == 'o':
     donner_des_points_a_couvrir()
+    bool_couvrir_des_points = input("Voulez vous la liste des bases pour être sûr de couvrir certains points ?: (o/n)")
+
 
 print("bases fixes ? (1,3,12...):")
 #print_alphabet(len(tab_base))
@@ -200,12 +235,16 @@ tab_bases_fixes = from_string_to_tab(bases_fixes)
 print(tab_bases_fixes)
 
 print("Les sous-modèles fixes sont: ")
-
+start = time.time()
 tab_sous_modeles_fixe=[]
 trouver_sous_modèles_fixesv2(tab_bases_fixes,0,tab_sous_modeles_fixe)
-'''trouver_sous_modèles_fixesv3(tab_bases_fixes,0,tab_sous_modeles_fixe,from_bases_indices_to_point(tab_bases_fixes),
+'''trouver_sous_modèles_fixesv4(tab_bases_fixes,0,tab_sous_modeles_fixe,from_bases_indices_to_point(tab_bases_fixes),
                              len(from_bases_indices_to_point(tab_bases_fixes)),len(tab_bases_fixes))
 '''
+end = time.time()
+elapsed = end-start
+print(f'Le calcul à prit {elapsed:.2}ms')
+
 tab_sous_modeles_fixe_sans_bases = supprimer_les_bases_d_une_liste_de_point(tab_sous_modeles_fixe,d)
 print(tab_sous_modeles_fixe)
 
@@ -218,7 +257,7 @@ print("Qui correspondent aux bases: ")
 tab_base_des_sous_modeles = [from_points_to_base(x,d) for x in tab_sous_modeles_fixe_sans_bases]
 print(tab_base_des_sous_modeles)
 
-print("Et en indice: ") #
+print("Et en indice: ")
 tab_indice_base_des_sous_modeles = [from_bases_to_bases_indices(x) for x in tab_base_des_sous_modeles]
 print(tab_indice_base_des_sous_modeles)
 
@@ -226,19 +265,3 @@ print(tab_indice_base_des_sous_modeles)
 tab_lettre_des_sous_modeles = [[from_number_to_letter(y) for y in x] for x in tab_indice_base_des_sous_modeles ]
 print(tab_lettre_des_sous_modeles)
 '''
-def test_fonction():
-    print("Test bases i -> point")
-    print_alphabet(combination_tab[-1])
-    basei=input("base i ?:")
-    basei = [from_letter_to_number(x) for x in basei]
-    print("Liste des points couverts:")
-    points=from_bases_indices_to_point(basei)
-    print(points)
-
-    print("Liste des bases sur ces points:")
-    base = from_points_to_base(points,d)
-    print(base)
-
-    print("On revient à nos indices:")
-    circle = from_bases_to_bases_indices(base)
-    print(circle)
