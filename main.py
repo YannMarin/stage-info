@@ -37,6 +37,12 @@ def combinations(iterable, r): #piqué ici https://docs.python.org/3/library/ite
         yield tuple(pool[i] for i in indices)
 
 
+def combination_ordered(d,n):#créer le tableau des combinaisons des d parmi i de 1 à n en commençant par i=1 puis i=2 etc...
+    res = list(combinations_with_replacement(range(N), K))
+
+
+
+
 
 def from_base_indice_to_base(b):
     return tab_base[b]
@@ -73,7 +79,7 @@ def create_combination_tab(N,d):
     return tab_combinations
 
 def from_points_to_base(P,d): #P ensemble de point, d dimension, return l'ensemble des bases sur ces points.
-    list_bases = combinations(range(len(P)),d)
+    list_bases = combinations(range(len(P)),d) #TODO A OPTIMISER
     tab_bases = [[y for y in x] for x in list_bases]
     return [[P[y] for y in x] for x in tab_bases]
 
@@ -95,7 +101,6 @@ def print_alphabet(x): #affiche l'alphabet pour ceux qui ne le connaissent pas.
 
 ''' trouve les sous_modèles fixes maximaux
     à partir d'un ensemble d'indice de bases fixes
-    détails ici: https://docs.google.com/presentation/d/1YnGofHivYb_Xr2KnetLFWNmz9Z_GS-d_--weLX5VNyw/edit#slide=id.g10c4f279e95_0_10
 
     variables: B tableau d'indices de base
                 nB tableau de points couvert par B
@@ -128,7 +133,7 @@ def trouver_sous_modèles_fixesv1(B, r, tab,recursions): #B un ensemble d'indice
 
 
 '''         Dans cette version, le but est de faire la récurence sur tous les ensembles de bases qui couvrent un sous ensemble de nB et maximaux.'''
-def trouver_sous_modèles_fixesv2(B, r, tab, nB, taillenB, tailleB): #TODO à corriger, return aussi les sous-modèles non maximaux (ça veut dire que l'on envoit plusieurs fois les mêmes sous ensemble je pense
+def trouver_sous_modèles_fixesv2(B, r, tab, nB, taillenB, tailleB):
     combination = combination_tab[taillenB-d]
     if tailleB == combination:
         tab.append(nB)
@@ -152,30 +157,6 @@ def intersections(tabP): #tabP ensemble d'ensemble de points. return toutes les 
             tab_intersections_sans_doublons.append(x)
     return [x for x in tab_intersections_sans_doublons if len(x)== len(tabP[0])-1]
 
-
-def v3(B,tab_resultat,tab_sous_ensembles,taille):  #B liste de base fixe, tab_sous_ensembles: liste de sous ensembles de point de même taille qu'il faut tester.
-    if (taille >= d):
-        tab_sous_ensembles_non_modeles = []
-        for nBi in tab_sous_ensembles:
-            tab_base_de_nBi = from_points_to_base(nBi, d)
-            Bi = [x for x in B if from_base_indice_to_base(x) in tab_base_de_nBi]
-            if len(Bi) == combination_tab[taille-d]:
-                tab_resultat.append(nBi)
-            else:
-                tab_sous_ensembles_non_modeles.append(nBi)
-        #print("sous-ens:",tab_sous_ensembles_non_modeles)
-        #print("interscections:",intersections(tab_sous_ensembles_non_modeles))
-        if (len(tab_sous_ensembles_non_modeles) > 0):
-            v3(B,tab_resultat,intersections(tab_sous_ensembles_non_modeles),taille-1)
-
-def trouver_sous_modèles_fixesv3(B,tab_resultat): #TODO A supprimer, les intersections ne sont pas vraiment intéressantes.
-    nB = from_bases_indices_to_point(B)
-    tab_sous_ensemble = []
-    for i in range(0,len(nB)):
-        nBi =copy.copy(nB)
-        del nBi[i]
-        tab_sous_ensemble.append(nBi)
-    v3(B,tab_resultat,tab_sous_ensemble,len(nB)-1)
 
 
 def supprimer_les_bases_d_une_liste_de_point(P,d): #P liste de point, d dimension, retourne la même liste sans les éléments de taille d.
@@ -240,16 +221,25 @@ while bool_couvrir_des_points == 'o':
     donner_des_points_a_couvrir()
     bool_couvrir_des_points = input("Voulez vous la liste des bases pour être sûr de couvrir certains points ?: (o/n)")
 
-
-print("bases fixes ? (1,3,12...):")
+lecture_bases_fixes =input("bases-fixes en fichier ou en liste ?(f,l)")
+if lecture_bases_fixes == 'l':
+    print("bases fixes ? (1,3,12...):")
+    bases_fixes = input("bases_fixes: ")
+    tab_bases_fixes = from_string_to_tab(bases_fixes)
+elif lecture_bases_fixes == 'f':
+    nom_du_fichier =input("non du fichier ?")
+    fichier = open(nom_du_fichier,"r")
+    bases_fixes_fichier = fichier.readlines()
+    fichier.close()
+    tab_bases_fixes = [int(x) for x in bases_fixes_fichier]
 #print_alphabet(len(tab_base))
 
-bases_fixes = input("bases_fixes: ")
+
 #tab_bases_fixes = [from_letter_to_number(x) for x in bases_fixes]
-tab_bases_fixes = from_string_to_tab(bases_fixes)
+
 print(tab_bases_fixes)
 
-version = input("Version 1,2 ou 3 ?")
+version = input("Version 1 (SI nbr base <<n) ou version 2 (SI n << nbr base")
 print("Les sous-modèles fixes sont: ")
 start = time.time()
 tab_sous_modeles_fixe=[]
@@ -260,8 +250,7 @@ if version=='1':
 elif version == '2':
     trouver_sous_modèles_fixesv2(tab_bases_fixes, len(from_bases_indices_to_point(tab_bases_fixes)), tab_sous_modeles_fixe, from_bases_indices_to_point(tab_bases_fixes),
                                  len(from_bases_indices_to_point(tab_bases_fixes)), len(tab_bases_fixes))
-elif version == '3':
-    trouver_sous_modèles_fixesv3(tab_bases_fixes,tab_sous_modeles_fixe)
+
 
 end = time.time()
 elapsed = end-start
