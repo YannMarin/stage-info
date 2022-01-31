@@ -59,7 +59,7 @@ def from_bases_to_points(B): #B ensemble de base (points), return les points cou
             if y not in tab_points:
                 tab_points.append(y)
 
-    return tab_points #TODO est-ce que l'on a vraiment besoin de trier les points ? (non ?)
+    return sorted(tab_points) #TODO est-ce que l'on a vraiment besoin de trier les points ? (non ?)
 
 '''Créer le tableau des points à partir du tableau des indices des bases'''
 def from_bases_indices_to_point(B): #B ensemble de base (indices) return l'ensemble de points couvert par ces bases
@@ -104,10 +104,13 @@ def print_alphabet(x): #affiche l'alphabet pour ceux qui ne le connaissent pas.
                 r sert à réduire le nombre de récursion en ne supprimant que les bases à la rème position ou plus dans l'étape 3.
 '''
 
+''' la version 1 est médiocre, elle fait 2^tailleB itérations, mais elle permet de comprendre l'idée de base.
+    Elle peut tout de même être utile pour B de petite taille.'''
 
-def trouver_sous_modèles_fixesv1(B, r, tab): #B un ensemble d'indice, nB l'ensemble des points couvert par B,r indice de récursion, tab tableau du résultat
+def trouver_sous_modèles_fixesv1(B, r, tab,recursions): #B un ensemble d'indice, nB l'ensemble des points couvert par B,r indice de récursion, tab tableau du résultat
+    recursions[0] +=1
     tailleB = len(B)
-    nB = from_bases_indices_to_point(B)
+    nB = from_bases_indices_to_point(B) #faire un traqueur du nombre d'itérations.
     taillenB = len(nB)
     combination = combination_tab[taillenB-d]
     if tailleB == combination : #on termine la récursion
@@ -119,45 +122,60 @@ def trouver_sous_modèles_fixesv1(B, r, tab): #B un ensemble d'indice, nB l'ense
         for i in range(r,tailleB):
             Bi = copy.copy(B)
             del Bi[i]
-            trouver_sous_modèles_fixesv1(Bi, i, tab)
-            '''On test tous les sous-ensemble de B (sauf ceux correspondants à des sous-modèles non maximaux) mais est-ce bien nécessaire ?
-                -Si on ne prend que les sous ensemble de degré inférieur ?
-                 A tester, je crois que ça revient au même en fait, on ferait moins de récursion mais autant de test
-                 Mais est-ce qu'il ne faut pas diminuer au maximum le nombre de récursion ?
-                 '''
+            trouver_sous_modèles_fixesv1(Bi, i, tab,rec)
+            '''On test tous les sous-ensemble de B (sauf ceux correspondants à des sous-modèles non maximaux).'''
 
 
-            #v2 cherche à diminuer le nombre de récursion et de test mais demande de garder plus de chose en mémoire sur la pile. (je crois ?)
-def trouver_sous_modèles_fixesv2(B, r, tab, nB, taillenB, tailleB): #TODO ne marchera pas ? (ou pas mieux que v2).
-    combination = combination_tab[taillenB-d]
-    if tailleB == combination:
-        tab.append(nB)
-    else:
-        for i in range(r,tailleB):
-            Bi = [x for x in B]
-            del Bi[i]
-            nBi = from_bases_indices_to_point(Bi)
-            taillenBi = len(nBi)
-            while taillenBi < taillenB:
-
-                trouver_sous_modèles_fixesv2(Bi, i, tab, nBi, taillenBi, tailleB - 1)
 
 '''         Dans cette version, le but est de faire la récurence sur tous les ensembles de bases qui couvrent un sous ensemble de nB et maximaux.'''
-def trouver_sous_modèles_fixesv3(B, r, tab, nB, taillenB, tailleB): #TODO à corriger, return aussi les sous-modèles non maximaux (ça veut dire que l'on envoit plusieurs fois les mêmes sous ensemble je pense
+def trouver_sous_modèles_fixesv2(B, r, tab, nB, taillenB, tailleB): #TODO à corriger, return aussi les sous-modèles non maximaux (ça veut dire que l'on envoit plusieurs fois les mêmes sous ensemble je pense
     combination = combination_tab[taillenB-d]
     if tailleB == combination:
         tab.append(nB)
     else:
 
-        for i in range(r,taillenB):
-            nBi = [x for x in nB]
+        for i in range(0,r):
+            nBi = copy.copy(nB)
             del nBi[i]
             tab_base_de_nBi = from_points_to_base(nBi,d)
             Bi = [x for x in B if from_base_indice_to_base(x) in tab_base_de_nBi]
-            trouver_sous_modèles_fixesv3(Bi, i, tab, nBi, taillenB - 1, len(Bi)) #TODO il faut vérifier que l'on ne fais pas deux fois les mêmes ensemble
+            trouver_sous_modèles_fixesv2(Bi, i, tab, nBi, taillenB - 1, len(Bi))
+
+def intersection(P1,P2): #P1 P2 deux ensembles de points, return l'intersection des deux ensembles.
+    return [x for x in P1 if x in P2]
+
+def intersections(tabP): #tabP ensemble d'ensemble de points. return toutes les intersections deux à  qui sont de taille tabP[0]-1, sans doublons.
+    tab_intersections = [intersection(tabP[i],tabP[j]) for i in range(0,len(tabP)-1) for j in range(i+1,len(tabP))]
+    tab_intersections_sans_doublons = []
+    for x in tab_intersections:
+        if x not in tab_intersections_sans_doublons:
+            tab_intersections_sans_doublons.append(x)
+    return [x for x in tab_intersections_sans_doublons if len(x)== len(tabP[0])-1]
 
 
+def v3(B,tab_resultat,tab_sous_ensembles,taille):  #B liste de base fixe, tab_sous_ensembles: liste de sous ensembles de point de même taille qu'il faut tester.
+    if (taille >= d):
+        tab_sous_ensembles_non_modeles = []
+        for nBi in tab_sous_ensembles:
+            tab_base_de_nBi = from_points_to_base(nBi, d)
+            Bi = [x for x in B if from_base_indice_to_base(x) in tab_base_de_nBi]
+            if len(Bi) == combination_tab[taille-d]:
+                tab_resultat.append(nBi)
+            else:
+                tab_sous_ensembles_non_modeles.append(nBi)
+        #print("sous-ens:",tab_sous_ensembles_non_modeles)
+        #print("interscections:",intersections(tab_sous_ensembles_non_modeles))
+        if (len(tab_sous_ensembles_non_modeles) > 0):
+            v3(B,tab_resultat,intersections(tab_sous_ensembles_non_modeles),taille-1)
 
+def trouver_sous_modèles_fixesv3(B,tab_resultat): #TODO A supprimer, les intersections ne sont pas vraiment intéressantes.
+    nB = from_bases_indices_to_point(B)
+    tab_sous_ensemble = []
+    for i in range(0,len(nB)):
+        nBi =copy.copy(nB)
+        del nBi[i]
+        tab_sous_ensemble.append(nBi)
+    v3(B,tab_resultat,tab_sous_ensemble,len(nB)-1)
 
 
 def supprimer_les_bases_d_une_liste_de_point(P,d): #P liste de point, d dimension, retourne la même liste sans les éléments de taille d.
@@ -197,7 +215,7 @@ def from_string_to_tab(string): #transforme un string de la forme 1,23,4 en un t
     return tab
 
 
-
+print(set.issubset((set([1,2,3])),set([1,2,3,4,5])))
 print("Taille des modèles ?")
 n=int(input("n: "))
 print("Dimension ?:")
@@ -231,20 +249,41 @@ bases_fixes = input("bases_fixes: ")
 tab_bases_fixes = from_string_to_tab(bases_fixes)
 print(tab_bases_fixes)
 
-version = input("Version 1 ou 3 ?")
+version = input("Version 1,2 ou 3 ?")
 print("Les sous-modèles fixes sont: ")
 start = time.time()
 tab_sous_modeles_fixe=[]
+rec = [0]
 
 if version=='1':
-    trouver_sous_modèles_fixesv1(tab_bases_fixes, 0, tab_sous_modeles_fixe)
-else:
-    trouver_sous_modèles_fixesv3(tab_bases_fixes, 0, tab_sous_modeles_fixe, from_bases_indices_to_point(tab_bases_fixes),
+    trouver_sous_modèles_fixesv1(tab_bases_fixes, 0, tab_sous_modeles_fixe,rec)
+elif version == '2':
+    trouver_sous_modèles_fixesv2(tab_bases_fixes, len(from_bases_indices_to_point(tab_bases_fixes)), tab_sous_modeles_fixe, from_bases_indices_to_point(tab_bases_fixes),
                                  len(from_bases_indices_to_point(tab_bases_fixes)), len(tab_bases_fixes))
+elif version == '3':
+    trouver_sous_modèles_fixesv3(tab_bases_fixes,tab_sous_modeles_fixe)
 
 end = time.time()
 elapsed = end-start
 print(f'Le calcul à prit {elapsed:.2}ms')
+print(f'et a fait {rec[0]} recursions')
+
+tab_sous_modeles_fixe_sans_doublon = []
+tab_sous_modeles_fixe_sans_doublon = [x for x in tab_sous_modeles_fixe if x not in tab_sous_modeles_fixe_sans_doublon]
+tab_sous_modeles_fixe = tab_sous_modeles_fixe_sans_doublon
+
+tab_sous_modeles_fixes_max = []
+
+for x in range(len(tab_sous_modeles_fixe)):
+    count = 0
+    for y in range(len(tab_sous_modeles_fixe)):
+        if not set(tab_sous_modeles_fixe[x]) < set(tab_sous_modeles_fixe[y]):
+            count += 1
+    if count == len(tab_sous_modeles_fixe) :
+        tab_sous_modeles_fixes_max.append(tab_sous_modeles_fixe[x])
+
+
+tab_sous_modeles_fixe = tab_sous_modeles_fixes_max
 
 tab_sous_modeles_fixe_sans_bases = supprimer_les_bases_d_une_liste_de_point(tab_sous_modeles_fixe,d)
 print(tab_sous_modeles_fixe)
@@ -252,6 +291,7 @@ print(tab_sous_modeles_fixe)
 print("Il y en a :",len(tab_sous_modeles_fixe))
 
 print("et sans les bases: ")
+tab_sous_modeles_fixe_sans_bases = sorted(tab_sous_modeles_fixe_sans_bases)
 print(tab_sous_modeles_fixe_sans_bases)
 print("Il y en a :",len(tab_sous_modeles_fixe_sans_bases))
 print("Qui correspondent aux bases: ")
