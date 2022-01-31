@@ -37,10 +37,6 @@ def combinations(iterable, r): #piqué ici https://docs.python.org/3/library/ite
         yield tuple(pool[i] for i in indices)
 
 
-def combination_ordered(d,n):#créer le tableau des combinaisons des d parmi i de 1 à n en commençant par i=1 puis i=2 etc...
-    res = list(combinations_with_replacement(range(N), K))
-
-
 
 
 
