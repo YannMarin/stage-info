@@ -74,11 +74,19 @@ def create_combination_tab(N,d):
     tab_combinations = [binomial(n,d) for n in range(d,N+1)]
     return tab_combinations
 
+def create_combination_reverse(N,d): #donne les combinaisons dans l'ordre : d'abord les k parmis k puis k parmi k+1...k parmi n, utiliser pour le critère de sous-modèle fixe.
+    list_tab_combinations_reverse = combinations(range(N),d)
+    tab_combinations_reverse = [[y for y in x] for x in list_tab_combinations_reverse]
+    return [[N-y-1 for y in x[::-1]] for x in tab_combinations_reverse[::-1]]
+
 def from_points_to_base(P,d): #P ensemble de point, d dimension, return l'ensemble des bases sur ces points.
     list_bases = combinations(range(len(P)),d) #TODO A OPTIMISER
     tab_bases = [[y for y in x] for x in list_bases]
     return [[P[y] for y in x] for x in tab_bases]
 
+def from_points_to_basev2(P,d): #P ensemble de point, d dimension, return l'ensemble des bases sur ces points.
+    tab_bases = [[y for y in x] for x in tab_base_ordered[0:combination_tab[len(P)-d]]]
+    return [[P[y] for y in x] for x in tab_bases]
 
 def from_bases_to_bases_indices(B): #B ensemble de bases (points), return l'ensemble des bases (indices)
     tab_indices = [from_base_to_base_indice(x) for x in B]
@@ -138,9 +146,10 @@ def trouver_sous_modèles_fixesv2(B, r, tab, nB, taillenB, tailleB):
         for i in range(0,r):
             nBi = copy.copy(nB)
             del nBi[i]
-            tab_base_de_nBi = from_points_to_base(nBi,d)
-            Bi = [x for x in B if from_base_indice_to_base(x) in tab_base_de_nBi]
-            trouver_sous_modèles_fixesv2(Bi, i, tab, nBi, taillenB - 1, len(Bi))
+            if taillenB-1 >= d:
+                tab_base_de_nBi = from_points_to_basev2(nBi,d)
+                Bi = [x for x in B if from_base_indice_to_base(x) in tab_base_de_nBi]
+                trouver_sous_modèles_fixesv2(Bi, i, tab, nBi, taillenB - 1, len(Bi))
 
 def intersection(P1,P2): #P1 P2 deux ensembles de points, return l'intersection des deux ensembles.
     return [x for x in P1 if x in P2]
@@ -192,14 +201,15 @@ def from_string_to_tab(string): #transforme un string de la forme 1,23,4 en un t
     return tab
 
 
-print(set.issubset((set([1,2,3])),set([1,2,3,4,5])))
+
 print("Taille des modèles ?")
 n=int(input("n: "))
 print("Dimension ?:")
 d=int(input("d: "))
+
 list_base = combinations(range(n),d)
 tab_base = [[y for y in x] for x in list_base]
-
+tab_base_ordered = create_combination_reverse(n,d)
 
 print("ensembles des bases:")
 for i in range(len(tab_base)):
