@@ -57,11 +57,11 @@ lexicographiquement et renvoit l'ensemble des points couverts '''
 def from_bases_to_points(B): #B ensemble de base (points), return les points couverts par ces bases.
     tab_points=[]
     for x in B:
-        for y in x:   #TODO a optimiser ? C'est la fonction qu'on appelle le plus
+        for y in x:
             if y not in tab_points:
                 tab_points.append(y)
 
-    return sorted(tab_points) #TODO est-ce que l'on a vraiment besoin de trier les points ? (non ?)
+    return sorted(tab_points)
 
 '''Créer le tableau des points à partir du tableau des indices des bases'''
 def from_bases_indices_to_point(B): #B ensemble de base (indices) return l'ensemble de points couvert par ces bases
@@ -137,7 +137,7 @@ def trouver_sous_modèles_fixesv1(B, r, tab,recursions): #B un ensemble d'indice
 
 
 '''         Dans cette version, le but est de faire la récurence sur tous les ensembles de bases qui couvrent un sous ensemble de nB et maximaux.'''
-def trouver_sous_modèles_fixesv2(B, r, tab, nB, taillenB, tailleB):
+def trouver_sous_modèles_fixesv2(B, r, tab, nB, taillenB, tailleB,recursions):
     combination = combination_tab[taillenB-d]
     if tailleB == combination:
         tab.append(nB)
@@ -147,9 +147,102 @@ def trouver_sous_modèles_fixesv2(B, r, tab, nB, taillenB, tailleB):
             nBi = copy.copy(nB)
             del nBi[i]
             if taillenB-1 >= d:
+                Bi = [x for x in B if set(from_base_indice_to_base(x)) <= set(nBi)]
+                trouver_sous_modèles_fixesv2(Bi, i, tab, nBi, taillenB - 1, len(Bi),recursions)
+    recursions[0] += 1
+    if recursions[0]%100 == 0:
+        print("\r", recursions[0], end="")
+
+""" backup d'une version qui ne marche pas sur 41 points
+def trouver_sous_modèles_fixesv2(B, r, tab, nB, taillenB, tailleB,recursions): 
+    recursions[0] += 1
+    #print(B)
+    print("\r",recursions[0],end="")
+    combination = combination_tab[taillenB-d]
+    if tailleB == combination:
+        tab.append(nB)
+    else:
+
+        for i in range(0,r):
+            nBi = copy.copy(nB)
+            #print("\r",nBi)
+            del nBi[i]
+            if taillenB-1 >= d:
                 tab_base_de_nBi = from_points_to_basev2(nBi,d)
-                Bi = [x for x in B if from_base_indice_to_base(x) in tab_base_de_nBi]
-                trouver_sous_modèles_fixesv2(Bi, i, tab, nBi, taillenB - 1, len(Bi))
+                #print("\r",tab_base_de_nBi)
+                Bi = [x for x in B if from_base_indice_to_base(x) in tab_base_de_nBi] #TODO faut changer ça
+                #print("\r",Bi)
+                print("Bi fini on passe à la suite")
+                trouver_sous_modèles_fixesv2(Bi, i, tab, nBi, taillenB - 1, len(Bi),recursions)
+
+"""
+
+def test_sous_modèles_fixes(PBr,tab,recursions,L):
+    nB = PBr[0]
+    B = PBr[1]
+    r = PBr[2]
+    taillenB = len(nB)
+    tailleB = len(B)
+    combination = combination_tab[taillenB - d]
+    if tailleB == combination: #On ne vérifie pas si le sous modèle est déjà dans la liste, c'est plus long que de l'ajouter et de trier la liste à la fin !
+        tab.append(nB)
+
+    else: #C'est ici l'important
+        if taillenB - 1 >= d:
+            for i in range(0, r): #TODO il faut que je re réfléchisse à ça
+                nBi = copy.copy(nB)
+                del nBi[i]
+                Bi = [x for x in B if set(from_base_indice_to_base(x)) <= set(nBi)]
+                L.append((nBi,Bi,i))
+
+
+
+def test_sous_modèles_fixesv2(PBr,tab,recursions,L):
+    nB = PBr[0]
+    B = PBr[1]
+    r = PBr[2]
+    taillenB = len(nB)
+    if taillenB - 1 >= d:
+        for i in range(0, r):
+            nBi = copy.copy(nB)
+            p=nBi[i]
+            del nBi[i]
+            Bi = [x for x in B if  p not in from_base_indice_to_base(x)]
+            taillenBi = len(nBi)
+            tailleBi = len(Bi)
+            combination = combination_tab[taillenBi-d]
+            if tailleBi == combination:
+                tab.append(nBi)
+            else:
+                L.append((nBi,Bi,i))
+            recursions[0] += 1
+            if recursions[0] % 50000 == 0 or taillenB < recursions[1]:
+                recursions[1] = taillenB
+                print("\r", recursions[0], " len(L) :", len(L), "len(B): ",tailleBi," len tab :", len(tab),"On est à l'étape ",n-recursions[1], "sur", n, ".", end="")
+'''
+def bool_sous_model_fixe(PBr,tab,recursions):
+    nB = PBr[0]
+    B = PBr[1]
+    taillenB = len(nB)
+    tailleB = len(B)
+    combination = combination_tab[taillenB - d]
+    if tailleB == combination:
+        tab.append(nB)
+        recursions[0]+=1
+        return True
+    else:
+        return False
+'''
+def trouver_sous_modèles_fixesv3(B,tab,nB,recursions):
+
+    L=[(nB,B,len(nB))] #list FIFO pour le parcourt en largeur.
+    while len(L) !=0:
+        test_sous_modèles_fixesv2(L[0],tab,recursions,L)
+        del L[0]
+
+
+
+
 
 def intersection(P1,P2): #P1 P2 deux ensembles de points, return l'intersection des deux ensembles.
     return [x for x in P1 if x in P2]
@@ -204,6 +297,8 @@ def from_string_to_tab(string): #transforme un string de la forme 1,23,4 en un t
 
 print("Taille des modèles ?")
 n=int(input("n: "))
+pE = 2**n
+print("On va devoir tester au maximum 2^n = ",pE," sous ensemble. Espérons moins !")
 print("Dimension ?:")
 d=int(input("d: "))
 
@@ -211,10 +306,12 @@ list_base = combinations(range(n),d)
 tab_base = [[y for y in x] for x in list_base]
 tab_base_ordered = create_combination_reverse(n,d)
 
-print("ensembles des bases:")
-for i in range(len(tab_base)):
-    print(i,"=",tab_base[i],end=",")
-print("")
+if n < 10:
+    print("ensembles des bases:")
+    for i in range(len(tab_base)):
+        print(i,"=",tab_base[i],end=",")
+    print("")
+
 combination_tab = create_combination_tab(n,d)
 print("Tableau des combinaisons", combination_tab)
 
@@ -227,38 +324,47 @@ while bool_couvrir_des_points == 'o':
     donner_des_points_a_couvrir()
     bool_couvrir_des_points = input("Voulez vous la liste des bases pour être sûr de couvrir certains points ?: (o/n)")
 
-lecture_bases_fixes =input("bases-fixes en fichier ou en liste ?(f,l)")
+lecture_bases_fixes =input("bases-fixes en fichier text, npy ou en liste ?(f,npy,l)")
 if lecture_bases_fixes == 'l':
     print("bases fixes ? (1,3,12...):")
     bases_fixes = input("bases_fixes: ")
     tab_bases_fixes = from_string_to_tab(bases_fixes)
 elif lecture_bases_fixes == 'f':
-    nom_du_fichier =input("non du fichier ?")
+    nom_du_fichier =input("nom du fichier ?")
     fichier = open(nom_du_fichier,"r")
     bases_fixes_fichier = fichier.readlines()
     fichier.close()
     tab_bases_fixes = [int(x) for x in bases_fixes_fichier]
+elif lecture_bases_fixes == "npy":
+    print("c est bon ")
+    fichier = np.load('sur41points.npy')
+    print(fichier)
+    tab_bases_fixes = [int(x) for x in fichier]
+
+
+
 #print_alphabet(len(tab_base))
 
 
 #tab_bases_fixes = [from_letter_to_number(x) for x in bases_fixes]
+if n <10:
+    print(tab_bases_fixes)
 
-print(tab_bases_fixes)
+version = input("Version 1 (SI nbr base <<n) ou version 2 (SI n << nbr base) ou v3 (test)")
 
-version = input("Version 1 (SI nbr base <<n) ou version 2 (SI n << nbr base")
-print("Les sous-modèles fixes sont: ")
-start = time.time()
+
 tab_sous_modeles_fixe=[]
-rec = [0]
-
+rec = [0,n]
+start = time.time()
 if version=='1':
     trouver_sous_modèles_fixesv1(tab_bases_fixes, 0, tab_sous_modeles_fixe,rec)
 elif version == '2':
     trouver_sous_modèles_fixesv2(tab_bases_fixes, len(from_bases_indices_to_point(tab_bases_fixes)), tab_sous_modeles_fixe, from_bases_indices_to_point(tab_bases_fixes),
-                                 len(from_bases_indices_to_point(tab_bases_fixes)), len(tab_bases_fixes))
-
-
+                                 len(from_bases_indices_to_point(tab_bases_fixes)), len(tab_bases_fixes),rec)
+elif version =='3':
+    trouver_sous_modèles_fixesv3(tab_bases_fixes,tab_sous_modeles_fixe,from_bases_indices_to_point(tab_bases_fixes),rec)
 end = time.time()
+
 elapsed = end-start
 print(f'Le calcul à prit {elapsed:.2}ms')
 print(f'et a fait {rec[0]} recursions')
@@ -281,23 +387,36 @@ for x in range(len(tab_sous_modeles_fixe)):
 tab_sous_modeles_fixe = tab_sous_modeles_fixes_max
 
 tab_sous_modeles_fixe_sans_bases = supprimer_les_bases_d_une_liste_de_point(tab_sous_modeles_fixe,d)
-print(tab_sous_modeles_fixe)
 
-print("Il y en a :",len(tab_sous_modeles_fixe))
+if n<10:
+    print("Les sous-modèles fixes sont: ")
+    print(tab_sous_modeles_fixe)
 
-print("et sans les bases: ")
+print("Il y a  :",len(tab_sous_modeles_fixe),"sous modèles fixes")
+
+
+
 tab_sous_modeles_fixe_sans_bases = sorted(tab_sous_modeles_fixe_sans_bases)
-print(tab_sous_modeles_fixe_sans_bases)
-print("Il y en a :",len(tab_sous_modeles_fixe_sans_bases))
-print("Qui correspondent aux bases: ")
-tab_base_des_sous_modeles = [from_points_to_base(x,d) for x in tab_sous_modeles_fixe_sans_bases]
-print(tab_base_des_sous_modeles)
+if n<10:
+    print(tab_sous_modeles_fixe_sans_bases)
 
-print("Et en indice: ")
+print("Et sans les bases il y en a :",len(tab_sous_modeles_fixe_sans_bases))
+if n<10:
+    print("et sans les bases: ")
+    print("Qui correspondent aux bases: ")
+tab_base_des_sous_modeles = [from_points_to_base(x,d) for x in tab_sous_modeles_fixe_sans_bases]
+if n<10:
+    print(tab_base_des_sous_modeles)
+
 tab_indice_base_des_sous_modeles = [from_bases_to_bases_indices(x) for x in tab_base_des_sous_modeles]
-print(tab_indice_base_des_sous_modeles)
+
+if n<10:
+    print("Et en indice: ")
+    print(tab_indice_base_des_sous_modeles)
+
 
 '''print("Et en lettre: ")
 tab_lettre_des_sous_modeles = [[from_number_to_letter(y) for y in x] for x in tab_indice_base_des_sous_modeles ]
 print(tab_lettre_des_sous_modeles)
 '''
+np.save('sous_modeles_maximum.npy',tab_sous_modeles_fixes_max)
