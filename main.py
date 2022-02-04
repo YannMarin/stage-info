@@ -240,7 +240,45 @@ def trouver_sous_modèles_fixesv3(B,tab,nB,recursions):
         test_sous_modèles_fixesv2(L[0],tab,recursions,L)
         del L[0]
 
+def ajouter_les_modèles_plus_grand(P,B,L):
+    tailleP = len(P)
+    bool_est_max = True
+    for i in range(P[-1],n):
+        Pi = copy.copy(P)
+        Pi.append(i)
+        Bi = copy.copy(B)
+        count_ = 0
+        j=0
+        while j<len(Bi):
+            if set(tab_base[Bi[j]]) < set(Pi):
+                count_ = count_+1
+                del Bi[j]
+                j=j-1
+            j=j+1
+        if count_ + combination_tab[tailleP-d] == combination_tab[tailleP-d+1]:
+            bool_est_max = False
+            L.append((Pi,Bi))
+    return bool_est_max
 
+
+
+
+
+
+
+def trouver_sous_modèles_fixesv4(B,tab,recursions):
+    L = [(tab_base[b],B[0:B.index(b)]+B[B.index(b)+1:]) for b in B]
+    while len(L) > 0:
+        if ajouter_les_modèles_plus_grand(L[0][0],L[0][1],L):
+            tab.append(L[0][0])
+        tailleP = len(L[0][0])
+        tailleB = len(L[0][1])
+        recursions[0]=recursions[0]+1
+        if recursions[0] % 500 == 0 or tailleP > recursions[1]:
+            recursions[1] = tailleP
+            print("\r", recursions[0], " len(L) :", len(L), "len(B): ", tailleB, " len tab :", len(tab),
+            "On est à l'étape ", recursions[1], "sur", n, "au maximum.", end="")
+        del L[0]
 
 
 
@@ -350,7 +388,7 @@ elif lecture_bases_fixes == "npy":
 if n <10:
     print(tab_bases_fixes)
 
-version = input("Version 1 (SI nbr base <<n) ou version 2 (SI n << nbr base) ou v3 (test)")
+version = input("Version 1 (SI nbr base <<n) ou version 2 (SI n << nbr base) ou v3  ou v4 (test)")
 
 
 tab_sous_modeles_fixe=[]
@@ -363,8 +401,11 @@ elif version == '2':
                                  len(from_bases_indices_to_point(tab_bases_fixes)), len(tab_bases_fixes),rec)
 elif version =='3':
     trouver_sous_modèles_fixesv3(tab_bases_fixes,tab_sous_modeles_fixe,from_bases_indices_to_point(tab_bases_fixes),rec)
-end = time.time()
 
+elif version =='4':
+    trouver_sous_modèles_fixesv4(tab_bases_fixes,tab_sous_modeles_fixe,rec)
+
+end = time.time()
 elapsed = end-start
 print(f'Le calcul à prit {elapsed:.2}ms')
 print(f'et a fait {rec[0]} recursions')
@@ -404,13 +445,14 @@ print("Et sans les bases il y en a :",len(tab_sous_modeles_fixe_sans_bases))
 if n<10:
     print("et sans les bases: ")
     print("Qui correspondent aux bases: ")
-tab_base_des_sous_modeles = [from_points_to_base(x,d) for x in tab_sous_modeles_fixe_sans_bases]
+    tab_base_des_sous_modeles = [from_points_to_base(x,d) for x in tab_sous_modeles_fixe_sans_bases]
 if n<10:
     print(tab_base_des_sous_modeles)
 
-tab_indice_base_des_sous_modeles = [from_bases_to_bases_indices(x) for x in tab_base_des_sous_modeles]
+
 
 if n<10:
+    tab_indice_base_des_sous_modeles = [from_bases_to_bases_indices(x) for x in tab_base_des_sous_modeles]
     print("Et en indice: ")
     print(tab_indice_base_des_sous_modeles)
 
