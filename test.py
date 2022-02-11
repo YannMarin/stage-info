@@ -2,6 +2,12 @@ import numpy as np
 from sympy import binomial
 import copy
 
+'''
+
+Programme pour créer des test à k<n points à partir des bases constantes d'un modèle à n points.
+
+'''
+
 def combinations(iterable, r): #piqué ici https://docs.python.org/3/library/itertools.html#itertools.combinations
     # combinations('ABCD', 2) --> AB AC AD BC BD CD
     # combinations(range(4), 3) --> 012 013 023 123

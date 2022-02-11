@@ -281,7 +281,6 @@ def trouver_sous_modèles_fixesv4(B,tab,recursions):
         del L[0]
 
 
-
 def intersection(P1,P2): #P1 P2 deux ensembles de points, return l'intersection des deux ensembles.
     return [x for x in P1 if x in P2]
 
@@ -388,7 +387,7 @@ elif lecture_bases_fixes == "npy":
 if n <10:
     print(tab_bases_fixes)
 
-version = input("Version 1 (SI nbr base <<n) ou version 2 (SI n << nbr base) ou v3  ou v4 (test)")
+version = input("Version 1 (SI nbr base <<n) ou version 2 (SI n << nbr base) ou v3  ou v4 (test) ou v5 (symétrique)")
 
 
 tab_sous_modeles_fixe=[]
@@ -404,6 +403,8 @@ elif version =='3':
 
 elif version =='4':
     trouver_sous_modèles_fixesv4(tab_bases_fixes,tab_sous_modeles_fixe,rec)
+
+
 
 end = time.time()
 elapsed = end-start
@@ -435,6 +436,12 @@ if n<10:
 
 print("Il y a  :",len(tab_sous_modeles_fixe),"sous modèles fixes")
 
+f = open('0PSym.txt', 'w')
+
+for x in tab_sous_modeles_fixe:
+    for y in x:
+        f.write(str(y)+",")
+    f.write("\n")
 
 
 tab_sous_modeles_fixe_sans_bases = sorted(tab_sous_modeles_fixe_sans_bases)
@@ -461,4 +468,3 @@ if n<10:
 tab_lettre_des_sous_modeles = [[from_number_to_letter(y) for y in x] for x in tab_indice_base_des_sous_modeles ]
 print(tab_lettre_des_sous_modeles)
 '''
-np.save('sous_modeles_maximum.npy',tab_sous_modeles_fixes_max)
