@@ -1,12 +1,23 @@
 import numpy as np
 from sympy import binomial
 import copy
+import os
 
 '''
 Programme pour créer la liste des symétriques des points.
 
 
 '''
+##Nom de fichiers:
+
+nom_de_dossier = "P"
+nom_de_fichier_points_sym = "points_sym.txt"
+nom_de_fichier_bases_sym = "bases_sym.txt"
+nom_de_fichier_restriction_sym = "restriction_sym.txt"
+
+
+
+
 def combinations(iterable, r): #piqué ici https://docs.python.org/3/library/itertools.html#itertools.combinations
     # combinations('ABCD', 2) --> AB AC AD BC BD CD
     # combinations(range(4), 3) --> 012 013 023 123
@@ -45,7 +56,13 @@ bases_fixes_fichier = fichier.readlines()
 fichier.close()
 tab_bases_fixes = [int(x) for x in bases_fixes_fichier]
 
-f = open('PointsSym16P.txt', 'w')
+try:
+   os.mkdir(str(n)+nom_de_dossier)
+except:
+    print("Le dossier existe déjà")
+
+f = open(str(n)+nom_de_dossier+"\\"+str(n)+nom_de_fichier_points_sym, 'w')
+
 
 x=0
 tab_sym  = []
@@ -66,7 +83,7 @@ for x in tab_base:
     xx.sort()
     tab_base_symetrique.append(tab_base.index(xx))
 
-f = open('BasesSym16P.txt','w')
+f = open(str(n)+nom_de_dossier+"\\"+str(n)+nom_de_fichier_bases_sym, 'w')
 for x in tab_base_symetrique:
     f.write(str(x)+"\n")
 print(tab_base_symetrique)
@@ -77,7 +94,7 @@ for x in tab_bases_fixes:
         sym_tab_base.append(x)
 
 sym_tab_base.sort()
-f= open('RestrictionSym16P.txt','w')
+f = open(str(n)+nom_de_dossier+"\\"+str(n)+nom_de_fichier_restriction_sym, 'w')
 for x in sym_tab_base:
     f.write(str(x)+"\n")
 print(sym_tab_base)

@@ -1,3 +1,4 @@
+import os
 """
 
 Programme pour projeter les SM sur le côté G,
@@ -17,7 +18,8 @@ Etape 3: On créer le fichier.
 
 """
 ##Nom de fichier
-nom_de_fichier = "16PNONSymProjG.txt"
+nom_de_dossier = "16P"
+nom_de_fichier = "test.txt"
 
 
 ##Etape 1 On prend la liste des symétriques des points
@@ -77,6 +79,9 @@ for P in tab_SMC:
     if proj not in tab_proj:
         tab_proj.append(proj)
 
+
+tab_proj.sort()
+tab_proj.sort(key=len)
 print("Tab_sym_points",len(tab_sym_point))
 print(tab_sym_point)
 print("Tab_Label",len(tab_label))
@@ -87,10 +92,31 @@ print("Tab_proj_G:",len(tab_proj))
 print(tab_proj)
 
 
+tab_proj_max = [] #On pourrait faire un meilleur tri mais bon.
+for P in tab_proj:
+    count = 0
+    for PP in tab_proj:
+        if not set(P) < set(PP):
+            count += 1
+    if count == len(tab_proj):
+        tab_proj_max.append(P)
+
+print("tab_proj_max:",len(tab_proj_max))
+print(tab_proj_max)
+
+
+
+
 ##On écris les fichiers
 
 
-f = open(nom_de_fichier, 'w')
+try:
+   os.mkdir(nom_de_dossier)
+except:
+    print("Le dossier existe déjà")
+
+f = open(nom_de_dossier+"\\"+nom_de_fichier, 'w')
+
 for x in tab_proj:
     for y in x:
         f.write(str(y)+",")

@@ -1,3 +1,5 @@
+import os
+
 """
 
 Programme pour calculer les 2-3 recouvrements/partitions à partir d'une liste d'ensemble.
@@ -19,7 +21,8 @@ On calcul les 3 recouvrements en appellant la fonction des 2 recouvrements sur c
 Etap 3: On écris les fichiers.
 """
 ##Noms des fichiers à écrire:
-fichier_recouvrement = "16PProjRec.txt"
+nom_de_dossier ="16P"
+fichier_recouvrement = "proJtoErec.txt"
 
 
 def from_string_to_tab(string): #transforme un string de la forme 1,23,4 en un tableau [1,23,4]
@@ -114,7 +117,12 @@ if test_exist_un_recouvrement(set(liste_des_points)):
 
 ##Etape 3: On écris les fichiers:
 
-    f = open(fichier_recouvrement, 'w')
+    try:
+        os.mkdir(nom_de_dossier)
+    except:
+        print("Le dossier existe déjà")
+
+    f = open(nom_de_dossier + "\\" + fichier_recouvrement, 'w')
 
     for x in tab_recouvrement:
         for y in x:

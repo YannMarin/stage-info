@@ -1,23 +1,3 @@
-"""
-
-Programme qui donne les d-uplets constants et non constants d'un sous-modèle.
-
-Etape 1:
-prend ne entrée une taille
-Prend en entrée un sous modèle sous la forme 1,2,3...
-Prend en entrée une liste de base
-
-Etape 2:
-créer la liste des 4uplets sur n points
-calcul la liste des 4uplets sur le sous modèle
-
-Etape 3:
-Calcul quelle sont les 4-uplets de X dans le sous modèle
-Calcul les d-uplets du sous modèle qui ne sont pas dans X.
-
-Etape 4:
-print les résultats.
-"""
 
 def combinations(iterable, r): #piqué ici https://docs.python.org/3/library/itertools.html#itertools.combinations
     # combinations('ABCD', 2) --> AB AC AD BC BD CD
@@ -64,8 +44,20 @@ def from_base_to_base_indice(b):
         i+=1
     return i
 
+def base_est_sym(P):
+    est_sym = True
+    for p in P:
+        if tab_sym_point[p] not in P:
+            est_sym = False
+    return est_sym
 
-##Etape 1:
+##Etape 1 On prend la liste des symétriques des points
+nom_du_fichier =input("nom du fichier des symétriques des points ?")
+fichier = open(nom_du_fichier,"r")
+points_fichier = fichier.readlines()
+fichier.close()
+tab_sym_point = [int(x) for x in points_fichier]
+
 print("Taille des modèles ?")
 n=int(input("n: "))
 list_base = combinations(range(n),4)
@@ -79,6 +71,20 @@ SM=from_string_to_tab(String_SM)
 print("Sous-modèle:")
 print(SM)
 
+symSM=[tab_sym_point[p] for p in SM]
+symSM.sort()
+print("Sous-modèle symétrique:")
+print(symSM)
+
+
+UnionSM = list(set(SM+symSM))
+print("Union des deux sous-modèles:")
+print(UnionSM)
+
+Base_SM = from_points_to_base(SM)
+Base_symSM = from_points_to_base(symSM)
+Base_UnionSM = from_points_to_base(UnionSM)
+
 nom_du_fichier =input("nom du fichier des d-uplets constants ?")
 fichier = open(nom_du_fichier,"r")
 bases_fixes_fichier = fichier.readlines()
@@ -86,26 +92,21 @@ fichier.close()
 tab_bases_fixes = [int(x) for x in bases_fixes_fichier]
 print("d-uplets constants:",len(tab_bases_fixes))
 
-##Etape 2:
 
-d_uplet_SM = from_points_to_base(SM)
-print("d-uplet_SM:",len(d_uplet_SM))
+base_nonbase = [0,0]
+liste_base_test = []
+for P in Base_UnionSM:
+    if P not in Base_SM and P not in Base_symSM:
+        if not base_est_sym(P):
+            if from_base_to_base_indice(P) in tab_bases_fixes: #test ici
+                base_nonbase[0]+=1
+                liste_base_test.append(P)
+            else:
+                base_nonbase[1]+=1
+                liste_base_test.append(P)
 
-##Etape 3:
+print(base_nonbase)
+print(liste_base_test)
 
-tab_non_const = []
-tab_const = []
-
-for P in d_uplet_SM:
-    if from_base_to_base_indice(P) in tab_bases_fixes:
-        tab_const.append(P)
-    else:
-        tab_non_const.append(P)
-
-print("tab_const:",len(tab_const))
-print(tab_const)
-
-print("tab_non_const:",len(tab_non_const))
-print(tab_non_const)
 
 

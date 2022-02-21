@@ -1,3 +1,5 @@
+
+import os
 """
 
 Programme pour passer d'une liste de sous-modèles constants max (symétriques ou non )à cette liste trié dans l'ordre suivant:
@@ -14,7 +16,12 @@ Puis on test dans l'ordre: Est-ce que c'est des sous modèle symétrique ? (ie i
     est-ce que c'est un symétrique intrinséque ? -> On ajoute dans NbrPSMCSymInt.txt
     sinon on ajoute dans NbrPSMCSymCr.txt
 """
-
+#Nom des fichiers:
+nom_de_dossier = "P"
+nom_de_fichier_Cr = "SMC_Cr_Max.txt"
+nom_de_fichier_Intra ="SMC_Intra_Max.txt"
+nom_de_fichier_Sep = "SMC_Sep_Max.txt"
+nom_de_fichier_nonSym = "test.txt"
 
 
 
@@ -167,14 +174,19 @@ print("tab_intra (from tab_cr):",len(tab_intra_from_tab_cr))
 print(tab_intra_from_tab_cr)
 
 
-f = open('16PSMCMAXSymCR.txt', 'w')
+try:
+   os.mkdir(str(n)+nom_de_dossier)
+except:
+    print("Le dossier existe déjà")
+
+f = open(str(n)+nom_de_dossier+"\\"+str(n)+nom_de_fichier_Cr, 'w')
 for x in tab_cr:
     for y in x:
         f.write(str(y)+",")
     f.write("\n")
 f.close()
 
-f=open('16PSMCNONSym.txt','w')
+f = open(str(n)+nom_de_dossier+"\\"+str(n)+nom_de_fichier_nonSym, 'w')
 for x in tab_notsym:
     for y in x:
         f.write(str(y) + ",")
