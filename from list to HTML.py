@@ -5,7 +5,7 @@ Module pour créer un tableau HTML à partir d'une liste
 
 """
 from tabulate import tabulate
-
+nom_de_la_liste = "16PSMC"
 
 
 nom_du_fichier =input("nom du fichier de la liste ?")
@@ -54,24 +54,39 @@ def creer_tab_nombre_par_taille(tab,tab_taille): ##Créer un tableau taille_nbr_
             nbr=0
     taille_nbr_par_taille.append(nbr)
     return taille_nbr_par_taille
-"""
-def creer_tab_HTML(tab,tab_taille,tab_nbr_par_taille):
-    f = open(nom_du_fichier+"_HTML"+".html", 'w')
-    f.write("<table>")
-    for i in range(0,tab_taille):
-        f.write("<tr><td>"+"\n")
-        f.write("</td><td>".join(tab_taille[i])+"\n")
-        f.write("</td></tr>"+"\n")
-        f.write("</table>")
-    f.close()"""
+
 
 tab_taille = creer_tab_taille(tab_list)
 tab_nbr_par_taille = creer_tab_nombre_par_taille(tab_list,tab_taille)
-type_of_tab = input("HTML (html) ou LateX (latex) ?")
-text = tabulate([tab_taille,tab_nbr_par_taille],tablefmt=type_of_tab,headers='firstrow')
+
 print(tab_taille)
 print(tab_nbr_par_taille)
-print(text)
-f= open(nom_du_fichier+"_"+type_of_tab+".html", 'w')
-f.write(text)
+
+f = open("html\\"+nom_de_la_liste+"_HTML" + ".html", 'w')
+f.write(
+    '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + nom_de_la_liste + '</title><link href="tab.css" rel="stylesheet" type="text/css"><style></style></head>')
+f.write("<body>")
+f.write('<table border="1" frame="border" rules="cols">')
+f.write(
+    "<caption>" + nom_de_la_liste + "</caption>")
+f.write("<tr>")
+f.write("<thead>")
+f.write("<th> Taille des SM </th>")
+f.write("<th> Nombre de SM </th>")
+f.write("</thead>")
+f.write("</tr>")
+f.write("<tbody>")
+for i in range(0, len(tab_taille)):
+    f.write("<tr>")
+    f.write("<td>"+str(tab_taille[i])+"</td>")
+    f.write("<td>"+str(tab_nbr_par_taille[i])+"</td>")
+    f.write("</tr>")
+
+f.write("</tbody>")
+f.write("</table>")
+
+f.write("</body>")
+f.write("</html>")
+f.close()
+
 

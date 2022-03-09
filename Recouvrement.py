@@ -22,7 +22,7 @@ Etap 3: On écris les fichiers.
 """
 ##Noms des fichiers à écrire:
 nom_de_dossier ="16P"
-fichier_recouvrement = "proJtoErec.txt"
+fichier_recouvrement = "SMC_seuil_rec.txt"
 
 
 def from_string_to_tab(string): #transforme un string de la forme 1,23,4 en un tableau [1,23,4]

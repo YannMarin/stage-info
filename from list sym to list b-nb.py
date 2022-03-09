@@ -1,3 +1,5 @@
+import math
+
 
 def combinations(iterable, r): #piqué ici https://docs.python.org/3/library/itertools.html#itertools.combinations
     # combinations('ABCD', 2) --> AB AC AD BC BD CD
@@ -138,5 +140,55 @@ print("tab_base_nonbase",len(tab_base_nonbase))
 print(tab_base_nonbase)
 
 
+def comb(n,k):
+    return math.factorial(n)/(math.factorial(n-k)*math.factorial(k))
 
+f = open("html\\"+nom_du_fichier+"_HTML"+".html", 'w')
 
+tab_SMC_Seuil = []
+
+f.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>Tab SMC sym</title><link href="tab.css" rel="stylesheet" type="text/css"><style></style></head>')
+f.write("<body>")
+f.write('<table border="1" frame="border" rules="cols">')
+f.write("<caption> tableau des bases/non bases des d-uplets non colinéaires de l'union de paire de SMC symétrique.</caption>")
+f.write("<tr>")
+f.write("<thead>")
+f.write("<th> SMC </th>")
+f.write("<th> Symétrique </th>")
+f.write("<th> Union </th>")
+f.write("<th> tailleUnion </th>")
+f.write("<th> nbr bases </th>")
+f.write("<th> nbr non bases </th>")
+f.write("<th> nbr non bases/(4 parmi tailleUnion) </th>")
+f.write("</thead>")
+f.write("</tr>")
+f.write("<tbody>")
+for i in range(0,len(tab_SMC)):
+    taux = tab_base_nonbase[i][1]/comb(len(tab_UnionSMC[i]),4)
+    f.write("<tr>")
+    f.write("<td>"+str(tab_SMC[i])+"</td>")
+    f.write("<td>"+str(tab_symSMC[i])+"</td>")
+    f.write("<td>"+str(tab_UnionSMC[i])+"</td>")
+    f.write("<td>"+str(len(tab_UnionSMC[i]))+"</td>")
+    f.write("<td>"+str(tab_base_nonbase[i][0])+"</td>")
+    f.write("<td>"+str(tab_base_nonbase[i][1])+"</td>")
+    if taux<0.08:
+        f.write('<td bgcolor="blue">'+str(taux)+"</td>")
+        if not tab_UnionSMC[i] in tab_SMC_Seuil:
+            tab_SMC_Seuil.append(tab_UnionSMC[i])
+    else:
+        f.write("<td>"+str(taux)+"</td>")
+    f.write("</tr>")
+f.write("</tbody>")
+f.write("</table>")
+
+f.write("</body>")
+f.write("</html>")
+f.close()
+
+f = open("SMC_seuil.txt", 'w')
+for x in tab_SMC_Seuil:
+    for y in x:
+        f.write(str(y) + ",")
+    f.write("\n")
+f.close()
