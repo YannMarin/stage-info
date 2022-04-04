@@ -34,7 +34,7 @@ nom_du_fichier = "coordpoint.txt"
 
 #duplet_text = input("d-uplet à tester ? 0,1,2..")
 #duplet = from_string_to_tab(duplet_text)
-duplet = [1,5,7,9]
+duplet = [0, 4, 6, 14]
 
 
 f = open(nom_du_fichier,'r')

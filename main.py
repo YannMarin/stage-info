@@ -18,7 +18,7 @@ Il donne ensuite les sous modèles fixes maximaux avec et sans les bases ainsi q
 ##Noms des fichiers et dossiers
 
 nom_de_dossier = "P"
-nom_de_fichier_des_smc = "PSMC_sym_max.txt"
+nom_de_fichier_des_smc = "PSMC.txt"
 
 
 def combinations(iterable, r): #piqué ici https://docs.python.org/3/library/itertools.html#itertools.combinations
@@ -302,9 +302,9 @@ if version =='1':
 elif version =='2':
     trouver_sous_modèles_fixesv4(tab_bases_fixes,tab_sous_modeles_fixe,rec)
 
-
-
 end = time.time()
+
+
 elapsed = end-start
 print(f'Le calcul à prit {elapsed:.2}ms')
 print(f'et a fait {rec[0]} recursions')
